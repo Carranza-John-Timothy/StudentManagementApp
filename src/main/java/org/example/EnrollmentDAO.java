@@ -1,6 +1,10 @@
 package org.example;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,11 +41,12 @@ public class EnrollmentDAO {
         }
     }
 
-    public void deleteEnrollment(int id) {
-        String query = "DELETE FROM Enrollments WHERE id = ?";
+    public void deleteEnrollment(int studentId, int courseId) {
+        String query = "DELETE FROM Enrollments WHERE student_id = ? AND course_id = ?";
         try (Connection connection = DatabaseConnection.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            preparedStatement.setInt(1, id);
+            preparedStatement.setInt(1, studentId);
+            preparedStatement.setInt(2, courseId);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();

@@ -41,12 +41,11 @@ public class EnrollmentDAO {
         }
     }
 
-    public void deleteEnrollment(int studentId, int courseId) {
-        String query = "DELETE FROM Enrollments WHERE student_id = ? AND course_id = ?";
+    public void deleteEnrollment(int enrollmentId) {
+        String query = "DELETE FROM Enrollments WHERE id = ?";
         try (Connection connection = DatabaseConnection.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            preparedStatement.setInt(1, studentId);
-            preparedStatement.setInt(2, courseId);
+            preparedStatement.setInt(1, enrollmentId);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();

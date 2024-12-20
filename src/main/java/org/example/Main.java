@@ -32,10 +32,10 @@ public class Main {
                     manageCourses(scanner, courseDAO);
                     break;
                 case 3:
-                    manageEnrollments(scanner, enrollmentDAO);
+                    manageEnrollments(scanner, enrollmentDAO, studentDAO, courseDAO); // Pass all required parameters
                     break;
                 case 4:
-                    manageGrades(scanner, gradeDAO);
+                    manageGrades(scanner, gradeDAO, enrollmentDAO); // Pass all required parameters
                     break;
                 case 5:
                     System.out.println("Exiting the application. Goodbye!");
@@ -124,7 +124,7 @@ public class Main {
         
         int choice = scanner.nextInt();
         scanner.nextLine(); // Consume newline
-
+    
         switch (choice) {
             case 1:
                 // View all courses
@@ -151,20 +151,52 @@ public class Main {
                 break;
             case 3:
                 // Update a course
+                // First, display the list of courses
+                List<Course> allCourses = courseDAO.getAllCourses();
+                if (allCourses.isEmpty()) {
+                    System.out.println("No courses available to update.");
+                    break;
+                }
+                System.out.println("Available courses:");
+                for (Course course : allCourses) {
+                    System.out.println("ID: " + course.getId() + ", Name: " + course.getCourseName());
+                }
                 System.out.print("Enter course ID to update: ");
                 int updateCourseId = scanner.nextInt();
                 scanner.nextLine(); // Consume newline
-                System.out.print("Enter new course name: ");
+    
+                // Check if the course ID exists
+                Course courseToUpdate = allCourses.stream()
+                    .filter(course -> course.getId() == updateCourseId)
+                    .findFirst()
+                    .orElse(null);
+    
+                if (courseToUpdate == null) {
+                    System.out.println("Course ID not found. Please try again.");
+                    break;
+                }
+    
+                System.out.print("Enter new course name (current: " + courseToUpdate.getCourseName() + "): ");
                 String newCourseName = scanner.nextLine();
-                System.out.print("Enter new course code: ");
+                System.out.print("Enter new course code (current: " + courseToUpdate.getCourseCode() + "): ");
                 String newCourseCode = scanner.nextLine();
-                System.out.print("Enter new credits: ");
+                System.out.print("Enter new credits (current: " + courseToUpdate.getCredits() + "): ");
                 int newCredits = scanner.nextInt();
                 courseDAO.updateCourse(new Course(updateCourseId, newCourseName, newCourseCode, newCredits));
                 System.out.println("Course updated.");
                 break;
             case 4:
                 // Delete a course
+                // First, display the list of courses
+                List<Course> coursesToDelete = courseDAO.getAllCourses();
+                if (coursesToDelete.isEmpty()) {
+                    System.out.println("No courses available to delete.");
+                    break;
+                }
+                System.out.println("Available courses:");
+                for (Course course : coursesToDelete) {
+                    System.out.println("ID: " + course.getId() + ", Name: " + course.getCourseName());
+                }
                 System.out.print("Enter course ID to delete: ");
                 int deleteCourseId = scanner.nextInt();
                 courseDAO.deleteCourse(deleteCourseId);
@@ -177,15 +209,162 @@ public class Main {
         }
     }
 
-    private static void manageEnrollments(Scanner scanner, EnrollmentDAO enrollmentDAO) {
+    private static void manageEnrollments(Scanner scanner, EnrollmentDAO enrollmentDAO, StudentDAO studentDAO, CourseDAO courseDAO) {
         System.out.println("=== Enrollment Management ===");
-        // Similar structure for managing enrollments
-        // Implement view, add, update, delete functionalities
+        System.out.println("1. View all enrollments");
+        System.out.println("2. Add an enrollment");
+        System.out.println("3. Delete an enrollment");
+        System.out.println("4. Back to main menu");
+        System.out.print("Enter your choice: ");
+        
+        int choice = scanner.nextInt();
+        scanner.nextLine(); // Consume newline
+    
+        switch (choice) {
+            case 1:
+                // View all enrollments
+                List<Enrollment> enrollments = enrollmentDAO.getAllEnrollments();
+                if (enrollments.isEmpty()) {
+                    System.out.println("No enrollments found.");
+                } else {
+                    for (Enrollment enrollment : enrollments) {
+                        System.out.println("ID: " + enrollment.getId() + ", Student ID: " + enrollment.getStudentId() +
+                                ", Course ID: " + enrollment.getCourseId());
+                    }
+                }
+                break;
+            case 2:
+                // Add an enrollment
+                System.out.println("Available Students:");
+                List<Student> students = studentDAO.getAllStudents();
+                for (Student student : students) {
+                    System.out.println("ID: " + student.getId() + ", Name: " + student.getName());
+                }
+                System.out.print("Enter student ID to enroll: ");
+                int studentId = scanner.nextInt();
+                scanner.nextLine(); // Consume newline
+    
+                System.out.println("Available Courses:");
+                List<Course> courses = courseDAO.getAllCourses();
+                for (Course course : courses) {
+                    System.out.println("ID: " + course.getId() + ", Name: " + course.getCourseName());
+                }
+                System.out.print("Enter course ID to enroll in: ");
+                int courseId = scanner.nextInt();
+                scanner.nextLine(); // Consume newline
+    
+                enrollmentDAO.addEnrollment(new Enrollment(studentId, courseId));
+                System.out.println("Enrollment added.");
+                break;
+            case 3:
+                // Delete an enrollment
+                System.out.println("Available Enrollments:");
+                List<Enrollment> allEnrollments = enrollmentDAO.getAllEnrollments();
+                for (Enrollment enrollment : allEnrollments) {
+                    System.out.println("ID: " + enrollment.getId() + ", Student ID: " + enrollment.getStudentId() +
+                            ", Course ID: " + enrollment.getCourseId());
+                }
+                System.out.print("Enter enrollment ID to delete: ");
+                int deleteEnrollmentId = scanner.nextInt();
+                enrollmentDAO.deleteEnrollment(deleteEnrollmentId);
+                System.out.println("Enrollment deleted.");
+                break;
+            case 4:
+                return; // Back to main menu
+            default:
+                System.out.println("Invalid choice. Please try again.");
+        }
     }
 
-    private static void manageGrades(Scanner scanner, GradeDAO gradeDAO) {
+    private static void manageGrades(Scanner scanner, GradeDAO gradeDAO, EnrollmentDAO enrollmentDAO) {
         System.out.println("=== Grade Management ===");
-        // Similar structure for managing grades
-        // Implement view, add, update, delete functionalities
+        System.out.println("1. View all grades");
+        System.out.println("2. Add a grade");
+        System.out.println("3. Update a grade");
+        System.out.println("4. Delete a grade");
+        System.out.println("5. Back to main menu");
+        System.out.print("Enter your choice: ");
+        
+        int choice = scanner.nextInt();
+        scanner.nextLine(); // Consume newline
+    
+        List<Grade> allGrades = gradeDAO.getAllGrades(); // Initialize here
+    
+        switch (choice) {
+            case 1:
+                // View all grades
+                if (allGrades.isEmpty()) {
+                    System.out.println("No grades found.");
+                } else {
+                    for (Grade grade : allGrades) {
+                        System.out.println("ID: " + grade.getId() + ", Enrollment ID: " + grade.getEnrollmentId() +
+                                ", Grade: " + grade.getGrade());
+                    }
+                }
+                break;
+            case 2:
+                // Add a grade
+                System.out.println("Available Enrollments:");
+                List<Enrollment> allEnrollments = enrollmentDAO.getAllEnrollments();
+                for (Enrollment enrollment : allEnrollments) {
+                    System.out.println("ID: " + enrollment.getId() + ", Student ID: " + enrollment.getStudentId() +
+                            ", Course ID: " + enrollment.getCourseId());
+                }
+                System.out.print("Enter enrollment ID to add a grade: ");
+                int enrollmentId = scanner.nextInt();
+                System.out.print("Enter the grade: ");
+                double gradeValue = scanner.nextDouble();
+                gradeDAO.addGrade(new Grade(enrollmentId, gradeValue));
+                System.out.println("Grade added.");
+                break;
+            case 3:
+                // Update a grade
+                if (allGrades.isEmpty()) {
+                    System.out.println("No grades available to update.");
+                    break;
+                }
+                System.out.println("Available Grades:");
+                for (Grade grade : allGrades) {
+                    System.out.println("ID: " + grade.getId() + ", Enrollment ID: " + grade.getEnrollmentId() +
+                            ", Grade: " + grade.getGrade());
+                }
+                System.out.print("Enter grade ID to update: ");
+                int updateGradeId = scanner.nextInt();
+                Grade gradeToUpdate = allGrades.stream()
+                    .filter(grade -> grade.getId() == updateGradeId)
+                    .findFirst()
+                    .orElse (null);
+    
+                if (gradeToUpdate == null) {
+                    System.out.println("Grade ID not found. Please try again.");
+                    break;
+                }
+    
+                System.out.print("Enter new grade (current: " + gradeToUpdate.getGrade() + "): ");
+                double newGradeValue = scanner.nextDouble();
+                gradeDAO.updateGrade(new Grade(updateGradeId, gradeToUpdate.getEnrollmentId(), newGradeValue));
+                System.out.println("Grade updated.");
+                break;
+            case 4:
+                // Delete a grade
+                if (allGrades.isEmpty()) {
+                    System.out.println("No grades available to delete.");
+                    break;
+                }
+                System.out.println("Available Grades:");
+                for (Grade grade : allGrades) {
+                    System.out.println("ID: " + grade.getId() + ", Enrollment ID: " + grade.getEnrollmentId() +
+                            ", Grade: " + grade.getGrade());
+                }
+                System.out.print("Enter grade ID to delete: ");
+                int deleteGradeId = scanner.nextInt();
+                gradeDAO.deleteGrade(deleteGradeId);
+                System.out.println("Grade deleted.");
+                break;
+            case 5:
+                return; // Back to main menu
+            default:
+                System.out.println("Invalid choice. Please try again.");
+        }
     }
 }

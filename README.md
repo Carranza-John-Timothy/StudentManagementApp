@@ -18,22 +18,26 @@ To set up the MySQL database for this application, follow these steps:
 
 1. **Create the Database**: Use the provided `init.sql` file to create the database schema and insert initial data.
    - Run the following command in your MySQL client:
+      ```sql
      SOURCE path/to/init.sql;
+     ```
 
 2. **Database Connection**: Update the `DatabaseConnection.java` file with your MySQL database credentials if they differ from the defaults:
    
+  ```java
    private static final String URL = "jdbc:mysql://localhost:3306/StudentDB";
    private static final String USER = "root";
    private static final String PASSWORD = "your_password";
-
+  ```
+ 
 ## Running the Application
 1. Clone the repository:
-```
+```bash
 git clone https://github.com/yourusername/StudentManagementApp.git
 cd StudentManagementApp
 ```
 2. Compile and run the application:
-```
+```bash
 mvn clean install
 mvn exec:java -Dexec.mainClass="org.example.Main"
 ```
